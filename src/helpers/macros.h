@@ -1,5 +1,5 @@
-#ifndef MACROS
-#define MACROS
+#ifndef CBASE_MACROS
+#define CBASE_MACROS
 
 #include <string>
 #include <filesystem>
