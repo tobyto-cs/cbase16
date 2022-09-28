@@ -3,40 +3,49 @@
 namespace fs = std::filesystem;
 
 using cbase::Template;
-std::vector<Template> Template::Builder(std::string fp) {
-  std::vector<Template> templates;
+std::vector<Template::ptr> Template::Builder(std::string fp) {
+  std::vector<Template::ptr> templates;
 
-  fs::path templatePath;
-  if (!fp.empty()) templatePath = fs::path(fp);
-  else templatePath = fs::path(CONFIG_DIR) / "templates";
+  /* fs::path templatePath; */
+  /* if (!fp.empty()) templatePath = fs::path(fp); */
+  /* else templatePath = fs::path(CONFIG_DIR) / "templates"; */
 
-  /* std::cout << "Template Builder Debug Start\n"; */
-  /* std::cout << "TemplatePath = " << templatePath << '\n'; */
-  assert(fs::exists(templatePath));
+  /* /1* std::cout << "Template Builder Debug Start\n"; *1/ */
+  /* /1* std::cout << "TemplatePath = " << templatePath << '\n'; *1/ */
+  /* assert(fs::exists(templatePath)); */
 
   // TODO: Find all .yaml files and try to initalize scheme
-  for (const auto& file : fs::directory_iterator(templatePath)) {
-    /* std::cout << file << '\n'; */
+  /* for (const auto& file : fs::directory_iterator(templatePath)) { */
+  /*   /1* std::cout << file << '\n'; *1/ */
+  /*   try { */
+  /*     templates.emplace_back(std::make_unique<Template>(file.path())); */
+  /*   } catch (invalid_template e) { */
+  /*     std::cout << e.what() << '\n'; */
+  /*   } */
+  /* } */
+
+  templatedir_parser(templatefp_checker(fp), [&templates](fs::path fp) -> void {
     try {
-      templates.push_back(Template(file.path()));
+      templates.emplace_back(std::make_unique<Template>(fp));
     } catch (invalid_template e) {
       std::cout << e.what() << '\n';
     }
-  }
+  }); 
   return templates;
 }  
 
-Template Template::findTemplate(std::string templateName) {
+Template::ptr Template::findTemplate(std::string templateName) {
   fs::path templateDir = fs::path(CONFIG_DIR) / "templates";
   assert(fs::exists(templateDir));
   for (const auto& temps : fs::directory_iterator(templateDir)) {
-    if (temps.path().filename() == templateName) return Template(temps.path());
+    if (temps.path().filename() == templateName) return std::make_unique<Template>(temps.path());
   }
-  throw invalid_template(templateDir/templateName, templateName);
+  return NULL;
 }
 
 
 Template::Template(std::string fn) {
+  std::cout << fn << '\n';
   name = fs::path(fn).filename();
   fs::path configPath = fs::path(fn) / "templates/config.yaml";
   if (!fs::exists(configPath)) throw invalid_template(fn, name, "Config yaml file not found...");
@@ -55,13 +64,13 @@ Template::Template(std::string fn) {
     // TODO: validate this path it finds
     fs::path stfp = fs::path(fn);
     /* std::cout << "Added subtemplate with path: " << mustache.c_str() << '\n'; */
-    subtemplates.emplace_back(Subtemplate(n, stfp));
+    subtemplates.emplace_back(std::make_shared<Subtemplate>(Subtemplate(n, stfp)));
   }
 }
 
-const Template::Subtemplate Template::getSubtemplate(std::string name) const {
-  auto it = std::find_if(subtemplates.begin(), subtemplates.end(), [&name](Template::Subtemplate subtemp){ return subtemp.isEqual(name); }); 
-  if (it == subtemplates.end()) throw invalid_template("Subtemplate is not found...");
+const Template::sub_ptr Template::getSubtemplate(std::string name) const {
+  auto it = std::find_if(subtemplates.begin(), subtemplates.end(), [&name](Template::sub_ptr subtemp){ return subtemp->isEqual(name); }); 
+  if (it == subtemplates.end()) return NULL;
   return *it;
 }
 
@@ -70,6 +79,7 @@ Template::Subtemplate::Subtemplate(ryml::NodeRef subtemplateRoot, std::filesyste
   if (!fs::exists(fp)) throw invalid_template(fp, name);
   
   std::filesystem::path mustache = fp/"templates"/(name + ".mustache");
+  std::cout << "mustacepath = " << mustache << '\n';
   c4::from_chars(subtemplateRoot.find_child("extension").val(), &extension);
   c4::from_chars(subtemplateRoot.find_child("output").val(), &outputPath);
   outputPath = fp / outputPath;

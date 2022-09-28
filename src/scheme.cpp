@@ -12,7 +12,7 @@ const std::set<std::string> Scheme::validTags = {"scheme", "author", "base00", "
 
 std::vector<std::string> Scheme::StringList(const std::string& fp) {
   std::vector<std::string> schemes;
-  dir_parser(fp_checker(fp), [&schemes](fs::path file) -> void {
+  schemedir_parser(schemefp_checker(fp), [&schemes](fs::path file) -> void {
     if (file.extension() == ".yaml") schemes.emplace_back(file.stem());
   });
   return schemes;
@@ -21,7 +21,7 @@ std::vector<std::string> Scheme::StringList(const std::string& fp) {
 std::vector<fs::path> Scheme::PathList(const std::string& fp) {
   std::vector<fs::path> schemes;
 
-  dir_parser(fp_checker(fp), [&schemes](fs::path file) -> void {
+  schemedir_parser(schemefp_checker(fp), [&schemes](fs::path file) -> void {
     if (file.extension() == ".yaml") schemes.emplace_back(file);
   });
   return schemes;
@@ -30,7 +30,7 @@ std::vector<fs::path> Scheme::PathList(const std::string& fp) {
 std::vector<Scheme::ptr> Scheme::Builder(const std::string& fp) {
   std::vector<std::unique_ptr<Scheme>> schemes;
   // Parse all scheme directories
-  dir_parser(fp_checker(fp), [&schemes](fs::path file) -> void {
+  schemedir_parser(schemefp_checker(fp), [&schemes](fs::path file) -> void {
     if (file.extension() != ".yaml") return;
     assert(fs::is_regular_file(file));
     try { 

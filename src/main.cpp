@@ -12,18 +12,15 @@ int main() {
   /*   std::cout << *scheme << '\n'; */
   /* } */
 
-  /* std::vector<Template> templates = Template::Builder(); */
-  /* for (auto tmplate : templates) { */
-  /*   /1* std::cout << tmplate << '\n'; *1/ */
-  /*   try { */
-  /*     std::cout << tmplate.getSubtemplate("default") << '\n'; */
-  /*   } catch (std::invalid_argument e) { */
-  /*     std::cout << e.what() << '\n'; */
-  /*   } */
-  /* } */
+  std::vector<Template::ptr> templates = Template::Builder();
+  for (Template::ptr& tmplate : templates) {
+    Template::sub_ptr default_subtemp = tmplate->getSubtemplate("default");
+    if (default_subtemp == NULL) std::cout << tmplate->getName() << " does not have a default subtemplate" << '\n';
+    std::cout << *tmplate << '\n';
+  }
 
-  std::vector<std::string> schemeList = Scheme::StringList();
-  for (std::string s : schemeList) std::cout << s << '\n';
+  /* std::vector<std::string> schemeList = Scheme::StringList(); */
+  /* for (std::string s : schemeList) std::cout << s << '\n'; */
   /* std::vector<std::filesystem::path> schemePathList = Scheme::PathList(); */
   /* for (auto fp : schemePathList) std::cout << fp << '\n'; */
 
