@@ -3,35 +3,61 @@
 #include "helpers/macros.h"
 #include "scheme.h"
 #include "template.h"
+#include <boost/program_options.hpp>
 
 using namespace cbase;
-int main() {
+namespace po = boost::program_options;
 
-  /* std::vector<Scheme::ptr> schemes = Scheme::Builder(); */
-  /* for (Scheme::ptr& scheme : schemes) { */
-  /*   std::cout << *scheme << '\n'; */
-  /* } */
+void invalid_cli(po::options_description desc);
 
-  std::vector<Template::ptr> templates = Template::Builder();
-  for (Template::ptr& tmplate : templates) {
-    Template::sub_ptr default_subtemp = tmplate->getSubtemplate("default");
-    if (default_subtemp == NULL) std::cout << tmplate->getName() << " does not have a default subtemplate" << '\n';
-    std::cout << *tmplate << '\n';
+int main(int argc, char* argv[]) {
+  po::options_description desc("cbase16 cli tool usage");
+  desc.add_options()
+    ("help,h", "Display this help message")
+    ("version,v", "Display the version number")
+    ("action", po::value<std::string>(), "Determines what action to do" 
+        "Values: \n"
+        "\tbuild <template> <scheme>: \n"
+        "\tinject:")
+    ("args", po::value<std::vector<std::string>>(), "Arguments for action")
+  po::positional_options_description pd;
+  pd.add("action", 1).add("args", -1);
+ 
+  po::variables_map vm;
+  // Try to read cli input, if invalid output the usage description
+  try {
+    po::store(po::command_line_parser(argc, argv).options(desc).positional(pd).run(), vm);
+    po::notify(vm);
+  } catch (po::unknown_option e) {
+    invalid_cli(desc);
   }
 
-  /* std::vector<std::string> schemeList = Scheme::StringList(); */
-  /* for (std::string s : schemeList) std::cout << s << '\n'; */
-  /* std::vector<std::filesystem::path> schemePathList = Scheme::PathList(); */
-  /* for (auto fp : schemePathList) std::cout << fp << '\n'; */
+  if (vm.count("help")) {
+    std::cout << desc << '\n';
+    return 0;
+  } 
 
-  /* Template i3 = Template::findTemplate("i3"); */
-  /* std::cout << i3 << '\n'; */
+  if (vm.count("action")) {
+    std::vector<std::string> args = vm["args"].as<std::vector<std::string>>();
+    std::string action = vm["action"].as<std::string>();
 
-  /* Scheme::ptr twilight = Scheme::findScheme("twilight"); */
-  /* Template i3 = Template::findTemplate("i3"); */
-  /* std::cout << *twilight << '\n'; */
-  /* std::cout << i3 << '\n'; */
-  /* std::cout << twilight.getTag("base00") << '\n'; */
+    if (action == "list") {
+
+
+    } else if (action == "build") {
+
+    } else if (action == "inject") {
+
+    } else {
+      invalid_cli(desc);
+    }
+  }
 
   return 0;
+}
+
+void invalid_cli(po::options_description desc) {
+  std::cout << "Invalid usage...\n"; 
+  std::cout << desc << '\n';
+  exit(1);
 }
