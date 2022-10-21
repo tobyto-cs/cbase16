@@ -2,8 +2,8 @@
 
 using namespace cbase;
 int main() {
-  std::vector<Scheme::ptr> schemes = Scheme::Builder();
-  for (Scheme::ptr& scheme : schemes) {
+  std::vector<std::shared_ptr<Scheme>> schemes = Scheme::Builder();
+  for (auto& scheme : schemes) {
     std::cout << *scheme << '\n';
   }
   return 0;

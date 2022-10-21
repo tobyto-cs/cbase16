@@ -35,7 +35,6 @@ namespace cbase {
       std::filesystem::path parent_dir;
 
     public:
-      typedef std::unique_ptr<Scheme> ptr;
       /*
        * @param fn Full path to the .yaml scheme 
        */
@@ -46,7 +45,7 @@ namespace cbase {
        *
        * @return a vector of all std::unique_ptr<Scheme> or all valid schemes from default path
        */
-      static std::vector<ptr> Builder(const std::string& fp="");
+      static std::vector<std::shared_ptr<Scheme>> Builder(const std::string& fp="");
 
       /*
        * @param fp If fp is supplied, then check dir for valid schemes
@@ -64,7 +63,7 @@ namespace cbase {
        * @return A std::unique_ptr<Scheme> to the new scheme
        *         NULL if scheme is not found
        */
-      const static ptr findScheme(std::string schemeName);
+      const static std::shared_ptr<Scheme> findScheme(std::string schemeName);
 
       friend std::ostream& operator<<(std::ostream& o, const Scheme& scheme) {
         for (auto tag : scheme.tags) {

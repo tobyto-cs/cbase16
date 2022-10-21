@@ -1,4 +1,5 @@
 #include "scheme.h"
+#include <filesystem>
 
 namespace fs = std::filesystem;
 using cbase::Scheme;
@@ -27,14 +28,14 @@ std::vector<fs::path> Scheme::PathList(const std::string& fp) {
   return schemes;
 }
 
-std::vector<Scheme::ptr> Scheme::Builder(const std::string& fp) {
-  std::vector<std::unique_ptr<Scheme>> schemes;
+std::vector<std::shared_ptr<Scheme>> Scheme::Builder(const std::string& fp) {
+  std::vector<std::shared_ptr<Scheme>> schemes;
   // Parse all scheme directories
   schemedir_parser(schemefp_checker(fp), [&schemes](fs::path file) -> void {
     if (file.extension() != ".yaml") return;
     assert(fs::is_regular_file(file));
     try { 
-      schemes.emplace_back(std::move(ptr(new Scheme(file))));
+      schemes.emplace_back(std::make_shared<Scheme>(file));
     }
     catch (invalid_scheme e) { 
       std::cout << e.what() << '\n';
@@ -45,16 +46,16 @@ std::vector<Scheme::ptr> Scheme::Builder(const std::string& fp) {
 
 // ==== CLASS METHODS ====
 
-const Scheme::ptr Scheme::findScheme(std::string schemeName) {
+const std::shared_ptr<Scheme> Scheme::findScheme(std::string schemeName) {
   fs::path schemesPath = fs::path(CONFIG_DIR)/"schemes";
 
   std::string schemeYaml = schemeName + ".yaml";
   if (fs::exists(schemesPath/schemeName) && fs::exists(schemesPath/schemeName/schemeYaml)) {
-    return ptr(new Scheme(schemesPath / schemeName / schemeYaml));
+    return std::make_unique<Scheme>(schemesPath / schemeName / schemeYaml);
   } else {
     for (const auto& schemeDir : fs::directory_iterator(schemesPath)) {
       for (const auto& file : fs::directory_iterator(schemeDir.path())) {
-        if (file.path().extension() == ".yaml") return ptr(new Scheme(file.path())); 
+        if (file.path().extension() == ".yaml") return std::make_shared<Scheme>(file.path()); 
       }
     }
   }

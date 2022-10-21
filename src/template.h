@@ -21,6 +21,7 @@
 /**
  * A class that stores a templates colors
  */
+
 namespace cbase {
   class Template {
     public: 
@@ -28,14 +29,14 @@ namespace cbase {
       // ---- SUBCLASS ----
       class Subtemplate {
         private:
-          std::string name, extension, outputPath;
+          std::string name, extension, outputPath, templateName;
           std::filesystem::path mustache;
         public: 
           /*
            * @param subtemplateRoot   YAML root node of the subtemplate
            * @param fp                Filepath to the .mustache file
            */
-          Subtemplate(ryml::NodeRef subtemplateRoot, std::filesystem::path fp);
+          Subtemplate(ryml::NodeRef subtemplateRoot, std::filesystem::path fp, const std::string& tempName);
 
 
           // GETTERS
@@ -59,8 +60,6 @@ namespace cbase {
       std::string name;
 
     public:
-      typedef std::unique_ptr<Template> ptr;
-      typedef std::shared_ptr<Subtemplate> sub_ptr;
       // CONSTRUCTORS
       /**
        * @param fn          Absolute Filepath of templates subfolder 
@@ -92,18 +91,18 @@ namespace cbase {
        *
        * @return        A vector of VALID template classes
        */
-      static std::vector<ptr> Builder(std::string fp="");  
+      static std::vector<std::shared_ptr<Template>> Builder(std::string fp="");  
       /*
        * @param templateName    The string representation of a template to search for
        *
        * @return                The first template match, will return NULL if one is not found
        */
-      static ptr findTemplate(std::string templateName);
+      static std::shared_ptr<Template> findTemplate(std::string templateName);
 
 
       // GETTERS
       const std::string getName() const { return name; }
-      const sub_ptr getSubtemplate(std::string name) const;
+      const std::shared_ptr<Subtemplate> getSubtemplate(std::string name) const;
 
 
       // HELPERS

@@ -17,8 +17,6 @@ namespace cbase {
     fs::path search_path;
     if (!fp.empty()) search_path = fs::path(fp); 
     else search_path = fs::path(CONFIG_DIR) / type;
-    // TODO: turn into an exception
-    std::cout << search_path << '\n';
     assert(fs::exists(search_path));
     return search_path;
   }

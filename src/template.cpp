@@ -3,30 +3,12 @@
 namespace fs = std::filesystem;
 
 using cbase::Template;
-std::vector<Template::ptr> Template::Builder(std::string fp) {
-  std::vector<Template::ptr> templates;
-
-  /* fs::path templatePath; */
-  /* if (!fp.empty()) templatePath = fs::path(fp); */
-  /* else templatePath = fs::path(CONFIG_DIR) / "templates"; */
-
-  /* /1* std::cout << "Template Builder Debug Start\n"; *1/ */
-  /* /1* std::cout << "TemplatePath = " << templatePath << '\n'; *1/ */
-  /* assert(fs::exists(templatePath)); */
-
-  // TODO: Find all .yaml files and try to initalize scheme
-  /* for (const auto& file : fs::directory_iterator(templatePath)) { */
-  /*   /1* std::cout << file << '\n'; *1/ */
-  /*   try { */
-  /*     templates.emplace_back(std::make_unique<Template>(file.path())); */
-  /*   } catch (invalid_template e) { */
-  /*     std::cout << e.what() << '\n'; */
-  /*   } */
-  /* } */
+std::vector<std::shared_ptr<Template>> Template::Builder(std::string fp) {
+  std::vector<std::shared_ptr<Template>> templates;
 
   templatedir_parser(templatefp_checker(fp), [&templates](fs::path fp) -> void {
     try {
-      templates.emplace_back(std::make_unique<Template>(fp));
+      templates.emplace_back(std::make_shared<Template>(fp));
     } catch (invalid_template e) {
       std::cout << e.what() << '\n';
     }
@@ -34,11 +16,22 @@ std::vector<Template::ptr> Template::Builder(std::string fp) {
   return templates;
 }  
 
-Template::ptr Template::findTemplate(std::string templateName) {
+std::vector<std::string> Template::StringList(std::string fp) {
+  std::vector<std::string> tmplates;
+  templatedir_parser(templatefp_checker(fp), [&tmplates](fs::path fp) -> void {
+    std::string tmp_name = fp.stem();
+    for (const auto& file : fs::directory_iterator(fp/"templates")) {
+      if (file.path().extension() == ".mustache") tmplates.emplace_back(tmp_name+"::"+file.path().stem().string());
+    }
+  });
+  return tmplates;
+}
+
+std::shared_ptr<Template> Template::findTemplate(std::string templateName) {
   fs::path templateDir = fs::path(CONFIG_DIR) / "templates";
-  assert(fs::exists(templateDir));
+  if (!fs::exists(templateDir)) throw invalid_template(templateName, templateDir, "Cannot find the template");
   for (const auto& temps : fs::directory_iterator(templateDir)) {
-    if (temps.path().filename() == templateName) return std::make_unique<Template>(temps.path());
+    if (temps.path().filename() == templateName) return std::make_shared<Template>(temps.path());
   }
   return NULL;
 }
@@ -64,22 +57,24 @@ Template::Template(std::string fn) {
     // TODO: validate this path it finds
     fs::path stfp = fs::path(fn);
     /* std::cout << "Added subtemplate with path: " << mustache.c_str() << '\n'; */
-    subtemplates.emplace_back(std::make_shared<Subtemplate>(Subtemplate(n, stfp)));
+    subtemplates.emplace_back(std::make_shared<Subtemplate>(Subtemplate(n, stfp, this->name)));
   }
 }
 
-const Template::sub_ptr Template::getSubtemplate(std::string name) const {
-  auto it = std::find_if(subtemplates.begin(), subtemplates.end(), [&name](Template::sub_ptr subtemp){ return subtemp->isEqual(name); }); 
+const std::shared_ptr<Template::Subtemplate> Template::getSubtemplate(std::string name) const {
+  auto it = std::find_if(subtemplates.begin(), subtemplates.end(), [&name](std::shared_ptr<Template::Subtemplate> subtemp){ return subtemp->isEqual(name); }); 
   if (it == subtemplates.end()) return NULL;
   return *it;
 }
 
-Template::Subtemplate::Subtemplate(ryml::NodeRef subtemplateRoot, std::filesystem::path fp) {
+Template::Subtemplate::Subtemplate(ryml::NodeRef subtemplateRoot, std::filesystem::path fp, const std::string& tempName) {
+  templateName = tempName;
   c4::from_chars(subtemplateRoot.key(), &name);
   if (!fs::exists(fp)) throw invalid_template(fp, name);
   
-  std::filesystem::path mustache = fp/"templates"/(name + ".mustache");
-  std::cout << "mustacepath = " << mustache << '\n';
+  std::string mustache_file = std::string(name + ".mustache");
+  mustache = fp/"templates"/mustache_file;
+  /* std::cout << "mustacepath = " << mustache << '\n'; */
   c4::from_chars(subtemplateRoot.find_child("extension").val(), &extension);
   c4::from_chars(subtemplateRoot.find_child("output").val(), &outputPath);
   outputPath = fp / outputPath;

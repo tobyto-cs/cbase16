@@ -11,9 +11,15 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
 	${CMAKE_SOURCE_DIR}/src/*.hpp)
 
-add_library(cbase ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(cbase ryml::ryml)
 
+add_library(cbase ${SOURCE_FILES} ${HEADER_FILES})
+set_property(TARGET cbase PROPERTY CXX_STANDARD 17)
+set_property(TARGET cbase PROPERTY CXX_STANDARD_REQUIRED ON)
+target_link_libraries(cbase ryml::ryml)
+target_link_libraries(cbase fmt::fmt)
+
+include_directories(${mstch_INCLUDE_DIR})
+target_link_libraries(cbase mstch)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS}) 
