@@ -103,6 +103,7 @@ namespace cbase {
       // GETTERS
       const std::string getName() const { return name; }
       const std::shared_ptr<Subtemplate> getSubtemplate(std::string name) const;
+      const std::vector<std::string> listSubtemplate() const;
 
 
       // HELPERS

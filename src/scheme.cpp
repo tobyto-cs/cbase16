@@ -1,5 +1,4 @@
 #include "scheme.h"
-#include <filesystem>
 
 namespace fs = std::filesystem;
 using cbase::Scheme;
@@ -38,7 +37,7 @@ std::vector<std::shared_ptr<Scheme>> Scheme::Builder(const std::string& fp) {
       schemes.emplace_back(std::make_shared<Scheme>(file));
     }
     catch (invalid_scheme e) { 
-      std::cout << e.what() << '\n';
+      std::cerr << e.what() << '\n';
     }
   });
   return schemes;
@@ -59,7 +58,7 @@ const std::shared_ptr<Scheme> Scheme::findScheme(std::string schemeName) {
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -71,16 +70,11 @@ const std::string Scheme::getTag(const std::string& tag) {
 
 // ==== CONSTRUCTORS ====
 
-Scheme::Scheme(std::string fn) {
-  fs::path schemePath = fn;
 
-  parent_dir = schemePath.parent_path();
-
+void Scheme::build_from_stream(std::istream& inp_stream, const std::string& id) {
   // Parse the .yaml file
-  std::ifstream file(schemePath);
-  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(inp_stream)), std::istreambuf_iterator<char>());
   stree = ryml::parse_in_arena(ryml::to_csubstr(content));
-
   // Grab and validate keys
   std::vector<ryml::substr> keys;
   std::string keyBuf, valBuf;
@@ -88,15 +82,29 @@ Scheme::Scheme(std::string fn) {
   auto it = validTags.begin();
   for (ryml::NodeRef n : stree.rootref().children()) {
     c4::from_chars(n.key(), &keyBuf);
-    if (!isValidTag(keyBuf)) std::cout << fn << " contains invalid key: " << keyBuf <<'\n';  
-    if (!n.has_val()) throw std::invalid_argument(fn + " is an invalid scheme, tag " + keyBuf + " has no value");  
+    if (!isValidTag(keyBuf)) throw std::runtime_error(id+" contains invalid key: "+keyBuf+'\n');  
+    if (!n.has_val()) throw std::invalid_argument(id + " is an invalid scheme, tag " + keyBuf + " has no value");  
     numValidTags++;
     c4::from_chars(n.val(), &valBuf);
     tags.insert(std::pair<std::string, std::string>(keyBuf, valBuf));
   }
   if (numValidTags != validTags.size()) {
-    throw std::invalid_argument(fn + " does not contain all required tags");
+    throw std::invalid_argument(id + " does not contain all required tags");
   }
+}
+
+Scheme::Scheme(const std::string& fn) {
+  fs::path schemePath = fn;
+
+  parent_dir = schemePath.parent_path();
+
+  // Parse the .yaml file
+  std::ifstream file(schemePath);
+  build_from_stream(file, fn);
+}
+
+Scheme::Scheme(std::istream& inp_stream) {
+  build_from_stream(inp_stream);
 }
 
 

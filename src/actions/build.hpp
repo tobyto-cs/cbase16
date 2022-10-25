@@ -1,3 +1,6 @@
+#ifndef CBASE_BUILD
+#define CBASE_BUILD
+
 #include <string>
 #include <ostream>
 #include <vector>
@@ -32,8 +35,6 @@ namespace cbase {
       for (auto &c : hex_digit) c = toupper(c);
       base_num = "base0"+hex_digit;
       base_val = schm->getTag(base_num);
-
-      std::cout << "Creating map for " << base_num << " = " << base_val << '\n';
 
       Color clr = Color(base_val);
       rgb_hex clr_hex = clr.getHexValue(); // 00-FF        char*
@@ -78,58 +79,65 @@ namespace cbase {
 
   std::string build_template(const std::shared_ptr<Scheme>& scheme, 
     const std::shared_ptr<Template::Subtemplate>& sub_tmplate) {
-
-    std::string out_file_name = sub_tmplate->getName()+sub_tmplate->getExtension();
-    fs::path mustache = sub_tmplate->getMustache();
-
-    std::ifstream t(mustache);
+    std::ifstream t(sub_tmplate->getMustache());
     std::stringstream buffer;
     buffer << t.rdbuf();
 
     mstch::map context = build_map(scheme);
-
     return mstch::render(buffer.str(), context);
 }
 
   /*
-   * @param scheme      name of the scheme to use
-   * @param tmplate     template string in the format <template>::<subtemplate>
-   *                    if <subtemplate> is omitted, "default" is used
+   * @param scheme      stdin/name/path of scheme to use
+   * @param tmplate     name/path of the template to use
+   * @param sub_tmplate name/default of the subtemplate to use
+   * @param output      stdout/default/path to output into
    *
    * @returns           result code
    */
-  int build_action(const std::string& scheme, const std::string& tmplate, const fs::path& output_path = fs::path()) {
-    // <template name>::<subtemplate name>
-    // Get template_name and subtemplate_name
-    std::string tempstr = tmplate;
-    std::string tmp_name, subtemp_name;
-    size_t pos = tempstr.find("::");
-    if (pos == std::string::npos) {
-      tmp_name = tmplate;
-      subtemp_name = "default";
-    } else {
-      tmp_name = tempstr.substr(0, pos);
-      tempstr.erase(0, pos + 2);
-      subtemp_name = tempstr.substr(0, pos);
+  int build_action(const std::string& scheme, const std::string& tmplate, const std::string& sub_tmplate,  const std::string& output) {
+    try {
+      // Build Scheme from stream or name/filepath
+      std::shared_ptr<Scheme> sch;
+      if (scheme == STDIN) {
+        if (isatty(STDIN_FILENO) == 1) throw std::runtime_error("Please pipe data into builder...");
+        sch = std::make_shared<Scheme>(std::cin);
+      }
+      else sch = Scheme::findScheme(scheme);
+      if (sch == nullptr) throw invalid_scheme(scheme);
+      // Build Template and Subtemplate
+      std::shared_ptr<Template> tem = Template::findTemplate(tmplate);
+      if (tem == nullptr) throw invalid_template(tmplate);
+      const std::shared_ptr<Subtemplate> sub_tem = tem->getSubtemplate(sub_tmplate);
+
+      std::string built = build_template(sch, sub_tem);
+
+      if (output == STDOUT) {
+        std::cout << built;
+      }
+      else {
+        fs::path output_dir;
+        if (output == "default") output_dir = sub_tem->getOutputPath();
+        else output_dir = fs::path(output);
+
+        if (output_dir.empty() || !fs::exists(output_dir)) throw std::runtime_error("Invalid output path: " + output_dir.string());
+        std::string file_name = "cbase16-"+sch->getTag("scheme")+sub_tem->getExtension();
+        std::ofstream output_file;
+        output_file.open(output_dir/file_name, std::ios::trunc);
+        output_file << built;
+        output_file.close();
+      }
+      return EXIT_SUCCESS;
+    } catch (const invalid_obj& e) {
+      std::cerr << e.what() << '\n';
+      return EXIT_FAILURE;
+    } catch (const std::runtime_error e) {
+      std::cerr << e.what() << '\n';
+      return EXIT_FAILURE;
     }
-
-    std::shared_ptr<Scheme> sch = Scheme::findScheme(scheme);
-    if (sch == NULL) throw invalid_scheme(scheme);
-    std::shared_ptr<Template> tem = Template::findTemplate(tmplate);
-    if (tem == NULL) throw invalid_template(tmplate);
-    const std::shared_ptr<Subtemplate> sub_tem = tem->getSubtemplate(subtemp_name);
-
-    fs::path output_dir = output_path;
-    if (output_dir.empty()) {
-      output_dir = sub_tem->getOutputPath();
-      if (!fs::exists(output_dir)) throw std::runtime_error("Invalid output path: " + output_dir.string());
-    }
-    std::ofstream output_file;
-    output_file.open(output_dir/("cbase16-"+sch->getTag("scheme")+sub_tem->getExtension()), std::ios::trunc);
-    std::cout << "Built template to " << output_dir/("cbase16"+sch->getTag("scheme")+sub_tem->getExtension()) << '\n';
-    output_file << build_template(sch, sub_tem);
-    output_file.close();
-
-    return 0;
+    std::cerr << "build_action I'm lost, im not supposed to be here";
+    return EXIT_FAILURE;
   }
 }
+
+#endif

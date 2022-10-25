@@ -11,6 +11,8 @@
 #include <filesystem>
 #include <assert.h>
 #include <functional>
+#include <unistd.h>
+#include <stdio.h>
 
 // ryml headers
 #include <ryml.hpp>
@@ -33,12 +35,14 @@ namespace cbase {
       ryml::Tree stree;
       std::map<std::string, std::string> tags;
       std::filesystem::path parent_dir;
+      void build_from_stream(std::istream& stream, const std::string& id="stream");
 
     public:
       /*
        * @param fn Full path to the .yaml scheme 
        */
-      Scheme(std::string fn);
+      Scheme(const std::string& fn);
+      Scheme(std::istream& inp_stream);
       
       /*
        * @param fp If fp is supplied (not NULL) then check dir for valid schemes

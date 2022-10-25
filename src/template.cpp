@@ -28,17 +28,15 @@ std::vector<std::string> Template::StringList(std::string fp) {
 }
 
 std::shared_ptr<Template> Template::findTemplate(std::string templateName) {
-  fs::path templateDir = fs::path(CONFIG_DIR) / "templates";
-  if (!fs::exists(templateDir)) throw invalid_template(templateName, templateDir, "Cannot find the template");
-  for (const auto& temps : fs::directory_iterator(templateDir)) {
+  if (!fs::exists(TEMPLATES_DIR)) throw invalid_template(templateName, TEMPLATES_DIR, "Cannot find the template");
+  for (const auto& temps : fs::directory_iterator(TEMPLATES_DIR)) {
     if (temps.path().filename() == templateName) return std::make_shared<Template>(temps.path());
   }
-  return NULL;
+  return nullptr;
 }
 
 
 Template::Template(std::string fn) {
-  std::cout << fn << '\n';
   name = fs::path(fn).filename();
   fs::path configPath = fs::path(fn) / "templates/config.yaml";
   if (!fs::exists(configPath)) throw invalid_template(fn, name, "Config yaml file not found...");
@@ -63,8 +61,14 @@ Template::Template(std::string fn) {
 
 const std::shared_ptr<Template::Subtemplate> Template::getSubtemplate(std::string name) const {
   auto it = std::find_if(subtemplates.begin(), subtemplates.end(), [&name](std::shared_ptr<Template::Subtemplate> subtemp){ return subtemp->isEqual(name); }); 
-  if (it == subtemplates.end()) return NULL;
+  if (it == subtemplates.end()) return nullptr;
   return *it;
+}
+
+const std::vector<std::string> Template::listSubtemplate() const {
+  std::vector<std::string> list;
+  for (auto sub_tem : subtemplates) list.emplace_back(sub_tem->getName());
+  return list;
 }
 
 Template::Subtemplate::Subtemplate(ryml::NodeRef subtemplateRoot, std::filesystem::path fp, const std::string& tempName) {
