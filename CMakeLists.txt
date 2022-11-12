@@ -1,24 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
-project(cbase16 CXX)
+cmake_minimum_required(VERSION 3.2)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
-set(CMAKE_BUILD_TYPE Debug)
+project(
+  cbase16
+  VERSION 0.1
+  DESCRIPTION "A base16 manager built using c++"
+  LANGUAGES CXX)
 
-# Add lib files
-link_directories(${CMAKE_SOURCE_DIR}/lib)
-set(Boost_USE_STATIC_LIBS OFF) 
-set(Boost_USE_MULTITHREADED ON)  
-set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.45.0 COMPONENTS program_options)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -g")
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rapidyaml)
-set(RYML_STANDALONE ON)
-
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/mstch)
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/fmt)
-
-configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)
-add_subdirectory(${CMAKE_SOURCE_DIR}/src)
-
-enable_testing()
-add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+add_subdirectory(src)
