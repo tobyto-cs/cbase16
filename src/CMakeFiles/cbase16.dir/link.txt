@@ -1,1 +1,0 @@
-/sbin/c++  -std=c++20 -g -rdynamic CMakeFiles/cbase16.dir/main.cpp.o -o cbase16 
