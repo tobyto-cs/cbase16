@@ -9,6 +9,21 @@ const set<string> Scheme::validTags = {
 };
 
 
+fs::path find_scheme(const string& name)
+{
+  for (const auto& dir : fs::directory_iterator(CBASE_SCHEMES_DIR))
+  {
+    for (const auto& file : fs::directory_iterator(dir.path()))
+    {
+      if (file.path().extension() == ".yaml" && dir.path().filename() == name)
+        return dir.path();
+    }
+  }
+
+  throw std::runtime_error(fmt::format("Scheme {} is not found", name));
+
+  return fs::path();
+}
 
 
 Scheme::Scheme(const po_struct& args)

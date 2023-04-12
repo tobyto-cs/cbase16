@@ -5,8 +5,14 @@ cmake_minimum_required(VERSION 3.2)
 add_executable(cbase16 main.cpp)
 
 target_sources(
-  cbase16 PRIVATE actions/build.cpp utils/po_struct.cpp scheme/scheme.cpp
-                  utils/updater.cpp actions/inject.cpp actions/list.cpp)
+  cbase16
+  PRIVATE actions/build.cpp
+          utils/po_struct.cpp
+          scheme/scheme.cpp
+          utils/updater.cpp
+          actions/inject.cpp
+          actions/list.cpp
+          utils/file_helpers.cpp)
 
 target_include_directories(cbase16 PUBLIC ${CMAKE_SOURCE_DIR}/include)
 

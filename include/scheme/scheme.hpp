@@ -11,6 +11,8 @@
 
 #include <utils/po_struct.hpp>
 #include <utils/Color.hpp>
+#include <utils/file_helpers.hpp>
+#include <utils/macros.hpp>
 
 #include <ryml.hpp>
 #include <ryml_std.hpp>

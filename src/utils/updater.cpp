@@ -1,4 +1,5 @@
 #include <utils/updater.hpp>
+
 int handle_git_err(const int& err, int line = -1) {
   string log, err_msg;
   if (err != 0) err_msg = git_error_last()->message;
@@ -192,7 +193,7 @@ namespace cbase {
     return true;
   }
 
-  string bts(const bool& b) {
+  inline string bts(const bool& b) {
     return b ? "✓" : "X";
   }
 

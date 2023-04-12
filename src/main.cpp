@@ -4,6 +4,7 @@
 #include <utils/macros.hpp>
 
 #include <actions/build.hpp>
+#include <actions/list.hpp>
 #include <utils/po_struct.hpp>
 
 // Uses libgit2
@@ -35,15 +36,15 @@ int main(int argc, char* argv[])
   {
     if (args.scheme)
     {
-      // TODO: list scheme Action
+      return cbase::list_schemes(args.debug.is_initialized());
     }
     else if (args.tmplate)
     {
-      // TODO: list template Action
+      return cbase::list_templates(args.debug.is_initialized());
     }
     else if (args.update)
     {
-      exit(cbase::check_updates(*args.debug));
+      exit(cbase::check_updates(args.debug.is_initialized()));
     }
   }
 
