@@ -1,3 +1,9 @@
 [submodule "cmake/libgit2"]
 	path = cmake/libgit2
 	url = https://github.com/libgit2/libgit2.git
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "external/rapidyaml"]
+	path = external/rapidyaml
+	url = https://github.com/biojppm/rapidyaml
