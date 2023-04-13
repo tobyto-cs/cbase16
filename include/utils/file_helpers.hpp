@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 #include <fstream>
 #include <functional>
 
@@ -12,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-using std::string, std::ifstream, std::function;
+using std::string, std::vector, std::ifstream, std::function;
 
 namespace cbase
 {

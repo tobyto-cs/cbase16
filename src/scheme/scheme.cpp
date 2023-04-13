@@ -13,10 +13,11 @@ fs::path find_scheme(const string& name)
 {
   for (const auto& dir : fs::directory_iterator(CBASE_SCHEMES_DIR))
   {
+    if (not fs::is_directory(dir.path())) continue;
     for (const auto& file : fs::directory_iterator(dir.path()))
     {
       if (file.path().extension() == ".yaml" && dir.path().filename() == name)
-        return dir.path();
+        return file.path();
     }
   }
 
@@ -46,6 +47,8 @@ Scheme::Scheme(const po_struct& args)
     // Read from a file
     fs::path fp(args.scheme.get());
 
+    if (!fs::exists(fp)) fp = find_scheme(args.scheme.get());
+
     if (fp.empty()) throw fs::filesystem_error("Scheme filepath is empty", fp, error_code());
     if (!fs::exists(fp)) throw fs::filesystem_error("Scheme file does not exist", fp, error_code());
 
@@ -54,8 +57,6 @@ Scheme::Scheme(const po_struct& args)
     file.open(fp);
     data_buf.insert(data_buf.begin(), std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
   }
-
-  if (args.debug) for (char c : data_buf) std::cout << c;
 
   // Parse the YAML
   ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(data_buf));
@@ -72,6 +73,7 @@ Scheme::Scheme(const po_struct& args)
     c4::from_chars(n.val(), &valBuf);
     tags.insert(pair<string, string>(keyBuf, valBuf));
   }
+
 
   /* for (auto p : tags) fmt::print("{}: {}\n", p.first, p.second); */
 
@@ -164,8 +166,6 @@ const string Scheme::apply_template(const fs::path& fp)
   file.exceptions(std::ios_base::badbit);
   file.open(fp);
   data_buf.insert(data_buf.begin(), std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-
-  fmt::print("TEMPLATE DATA_BUF: {}\n", data_buf);
 
   return apply_template(data_buf);
 }

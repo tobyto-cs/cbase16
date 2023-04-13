@@ -5,6 +5,7 @@
 
 #include <actions/build.hpp>
 #include <actions/list.hpp>
+#include <actions/inject.hpp>
 #include <utils/po_struct.hpp>
 
 // Uses libgit2
@@ -25,49 +26,56 @@ int main(int argc, char* argv[])
 
   cbase::po_struct args = cbase::po_struct(argc, argv, "cbase16");
 
-
-  if (args.help)
-  {
-    cout << args.desc << '\n';
-    exit(EXIT_SUCCESS);
-  }
-
-  else if (args.list)
-  {
-    if (args.scheme)
+  int exit_code = 0;
+  try {
+    if (args.help)
     {
-      return cbase::list_schemes(args.debug.is_initialized());
+      cout << args.desc << '\n';
+      exit_code = EXIT_SUCCESS;
     }
-    else if (args.tmplate)
+
+    else if (args.list.get())
     {
-      return cbase::list_templates(args.debug.is_initialized());
+      if (args.scheme)
+      {
+        exit_code = cbase::list_schemes(args.debug.get());
+      }
+      else if (args.tmplate)
+      {
+        exit_code = cbase::list_templates(args.debug.get());
+      }
+      else if (args.update)
+      {
+        exit_code = cbase::check_updates(args.debug.get());
+      }
     }
-    else if (args.update)
-    {
-      exit(cbase::check_updates(args.debug.is_initialized()));
+
+    else if (args.update) {
+      exit_code = cbase::do_updates(args.debug.get());
     }
+
+    else if (args.tmplate) {
+      if (args.debug) fmt::print("Build_Action\n");
+
+      // Check for scheme (STDIN or by tag)
+      bool piped = !isatty(STDIN_FILENO);
+      if (!args.scheme && !piped) args.invalid_option("Please specify a scheme to use, from Standard Input or by file");
+      if (piped && args.scheme) args.invalid_option("Scheme specified twice, use either Standard Input or --scheme");
+
+      exit_code = cbase::build_action(args);
+    }
+
+    else if (args.inject.get()) {
+      bool piped = !isatty(STDIN_FILENO);
+      if (!args.scheme && !piped) args.invalid_option("Please specify a scheme to use, from Standard Input or by file");
+      if (piped && args.scheme) args.invalid_option("Scheme specified twice, use either Standard Input or --scheme");
+
+      exit_code = cbase::inject_action(args);
+    }
+  } catch (std::runtime_error& e) {
+    fmt::print("Unhandled runtime error\n{}\n", e.what());
+    exit_code = EXIT_FAILURE;
   }
 
-  else if (args.update) {
-    if (*args.debug) cout << fmt::format("Going to do update\n");
-    exit(cbase::do_updates(*args.debug));
-  }
-
-  else if (args.tmplate) {
-    if (args.debug) fmt::print("Build_Action\n");
-
-    // Check for scheme (STDIN or by tag)
-    bool piped = !isatty(STDIN_FILENO);
-    if (!args.scheme && !piped) args.invalid_option("Please specify a scheme to use, from Standard Input or by file");
-    if (piped && args.scheme) args.invalid_option("Scheme specified twice, use either Standard Input or --scheme");
-
-    cbase::build_action(args);
-  }
-
-  else if (args.inject) {
-    // Inject action needs:
-    //   - Scheme
-  }
-
-  return 0;
+  return exit_code;
 }

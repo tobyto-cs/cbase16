@@ -21,6 +21,7 @@ namespace cbase
       // Callback takes two strings, does something, then returns nothing
       callback(key, val);
     }
+    file.close();
   }
 
   ryml::Tree read_yaml_file(const fs::path& yaml_path)
@@ -31,8 +32,9 @@ namespace cbase
     ifstream file;
     file.exceptions(std::ios_base::badbit);
     file.open(yaml_path);
-    string list_buf((std::istreambuf_iterator<char>(file)),
-        std::istreambuf_iterator<char>());
-    return ryml::parse_in_arena(ryml::to_csubstr(list_buf));
+    vector<char> data_buf;
+    data_buf.insert(data_buf.begin(), std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    file.close();
+    return ryml::parse_in_arena(ryml::to_csubstr(data_buf));
   }
 }

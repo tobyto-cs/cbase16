@@ -23,7 +23,7 @@ po_struct::po_struct(int& argc, char* argv[], const std::string& exe_name)
 void po_struct::build_option_desc(po::options_description& desc) {
   desc.add_options()
     ("help,h", po::value(&help)->implicit_value(std::string()), "Display is this message or detailed help on a command")
-    ("list,l", po::value(&list)->implicit_value(false), "Lists installed schemes/templates")
+    ("list,l", po::value(&list)->default_value(false)->implicit_value(true), "Lists installed schemes/templates")
     ("template,t", po::value(&tmplate)->implicit_value(std::string()), "Template to use for build action\n"
      "  No input: \tList out all installed templates\n"
      "  [path]: \tPath to the template\n"
@@ -39,11 +39,9 @@ void po_struct::build_option_desc(po::options_description& desc) {
       "  No input: \tUpdate/install all offical schemes and templates\n"
       "  [path]: \tPath to a yaml file of name:git_url pairs"
        )
-      ("inject,i", po::value(&inject)->multitoken()->implicit_value(std::vector<std::string>()), "Inject scheme to file(s)\n"
-       "  No input: \tInject into all configured files\n"
-       "  [paths]: \tList of paths to files seperated by spaces"
+      ("inject,i", po::value(&inject)->default_value(false)->implicit_value(true), "Inject specified scheme to configured files\n"
        )
-       ("debug,d", po::value(&debug)->implicit_value(true), "Debug output");
+       ("debug,d", po::value(&debug)->default_value(false)->implicit_value(true), "Debug output");
 }
 
 bool po_struct::_help_verify() const {
@@ -63,7 +61,7 @@ void po_struct::build_variable_map(int& argc, char* argv[]) {
     po::notify(var_map);
 
     // -o and -i are mutually exclusive
-    if (output && inject) {
+    if (output && inject.get()) {
       invalid_option("Inject does not use output flag");
     }
 
@@ -73,31 +71,31 @@ void po_struct::build_variable_map(int& argc, char* argv[]) {
     }
 
     // inject only takes scheme, not template and output
-    if (inject && (!scheme || tmplate || output || list || update)) {
+    if (inject.get() && (!scheme || tmplate || output || list.get() || update)) {
       invalid_option("Inject requires ONLY scheme input");
     }
 
     // scheme and output are only valid with template specified
-    if ((!inject && !help) && (!tmplate && scheme && output)) {
+    if ((!inject.get() && !help) && (!tmplate && scheme && output)) {
       invalid_option("Template must be specified");
     }
 
     // list is only valid with scheme OR tmplate
-    if (list && (scheme && tmplate)) {
+    if (list.get() && (scheme && tmplate)) {
       invalid_option("List must specify --scheme OR --template");
     }
 
-    if ((update && (tmplate && scheme)) || (output || inject)) {
+    if ((update && ((tmplate && scheme) || output || inject.get()))) {
       invalid_option("Update only optionally requires scheme or template");
     }
 
-    if (debug) {
-      fmt::print("Help is {}\n", help ? "ACTIVE" : "UNINITALIZED");
+    if (debug.get()) {
+      fmt::print("Help is {}\n", help ? "ACTIVE" : "INACTIVE");
       fmt::print("Template is {}\n", tmplate ? *tmplate : "UNINITALIZED");
       fmt::print("Scheme is {}\n", scheme ? *scheme : "UNINITALIZED");
       fmt::print("Output is {}\n", output ? *output : "UNINITALIZED");
-      fmt::print("Inject is {}\n", inject ? *output : "UNINITALIZED");
-      fmt::print("Update is {}\n", update ? "ACTIVE" : "UNINITALIZED");
+      fmt::print("Inject is {}\n", inject ? "ACTIVE" : "INACTIVE");
+      fmt::print("Update is {}\n", update ? "ACTIVE" : "INACTIVE");
     }
 
   } catch (po::unknown_option& e) {

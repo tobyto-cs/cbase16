@@ -218,7 +218,7 @@ namespace cbase {
     fmt::print(stdout, "Config File\n");
     fmt::print(stdout, "\tconfig dir:   {}\n", bts(fs::exists(CBASE_CONFIG_DIR)));
     if (debug) fmt::print(stdout, "\t\t{}\n", CBASE_CONFIG_DIR.string());
-    fmt::print(stdout, "\tconfig.yaml:  {}\n", bts(fs::exists(CBASE_CONFIG_DIR / "config.yaml")));
+    fmt::print(stdout, "\tconfig.yaml:  {}\n", bts(fs::exists(CBASE_CONFIG_FILE)));
     if (debug) fmt::print(stdout, "\t\t{}\n", (CBASE_CONFIG_DIR / "config.yaml").string());
     fmt::print(stdout, "Templates\n");
     fmt::print(stdout, "\ttemplate dir: {}\n", bts(fs::exists(CBASE_TEMPLATES_DIR)));

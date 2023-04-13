@@ -21,7 +21,7 @@ namespace cbase {
     optional<std::string> scheme;
     optional<std::string> output;
     optional<std::string> update;
-    optional<std::vector<std::string>> inject;
+    optional<bool> inject;
     optional<bool> debug;
     optional<bool> list;
 
