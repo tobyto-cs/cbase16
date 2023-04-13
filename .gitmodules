@@ -7,3 +7,9 @@
 [submodule "external/rapidyaml"]
 	path = external/rapidyaml
 	url = https://github.com/biojppm/rapidyaml
+[submodule "external/libgit2"]
+	path = external/libgit2
+	url = https://github.com/libgit2/libgit2.git
+[submodule "external/mstch"]
+	path = external/mstch
+	url = https://github.com/no1msd/mstch
