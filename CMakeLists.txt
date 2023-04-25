@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wextra -Wpedantic -Wuninitialized -Wmissing-include-dirs\
   -Wundef -Wstrict-aliasing -fsanitize=address -fno-omit-frame-pointer")
 message("Compiler flags: ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-02 -Wno-dev")
 
 # LeakSanitizer Suppression settings for external libraries.
 set(ENV{LSAN_OPTIONS} "suppressions=${CMAKE_SOURCE_DIR}/dev/lsan.supp")
@@ -30,6 +31,7 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+# DYNAMIC LIBS
 find_package(libgit2 REQUIRED)
 if(LIBGIT2_FOUND)
   include_directories(${LIBGIT2_INCLUDE_DIR})
@@ -37,11 +39,12 @@ endif()
 
 find_package(CURL REQUIRED)
 
-find_package(mstch)
+# find_package(mstch)
 
+# STATIC LIBS
 add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 add_subdirectory(external/rapidyaml)
-
-# add_subdirectory(external/mstch) include_directories(${mstch_INCLUDE_DIR})
+add_subdirectory(external/mstch)
+include_directories(${mstch_INCLUDE_DIR})
 
 add_subdirectory(src)
