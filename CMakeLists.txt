@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wextra -Wpedantic -Wuninitialized -Wmissing-include-dirs\
   -Wundef -Wstrict-aliasing -fsanitize=address -fno-omit-frame-pointer")
 message("Compiler flags: ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "-02 -Wno-dev")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wno-dev")
 
 # LeakSanitizer Suppression settings for external libraries.
 set(ENV{LSAN_OPTIONS} "suppressions=${CMAKE_SOURCE_DIR}/dev/lsan.supp")
