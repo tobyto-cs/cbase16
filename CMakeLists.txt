@@ -41,10 +41,10 @@ find_package(CURL REQUIRED)
 
 # find_package(mstch)
 
-# STATIC LIBS
+# STATIC LIBS EXCLUDE_FROM_ALL is required so these libs aren't install()
 add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
-add_subdirectory(external/rapidyaml)
-add_subdirectory(external/mstch)
+add_subdirectory(external/rapidyaml EXCLUDE_FROM_ALL)
+add_subdirectory(external/mstch EXCLUDE_FROM_ALL)
 include_directories(${mstch_INCLUDE_DIR})
 
 add_subdirectory(src)

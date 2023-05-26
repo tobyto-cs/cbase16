@@ -34,3 +34,5 @@ target_link_libraries(cbase16 PUBLIC mstch)
 target_link_libraries(cbase16 PUBLIC crypto)
 
 target_link_libraries(cbase16 PUBLIC curl)
+
+install(TARGETS cbase16 DESTINATION bin)
