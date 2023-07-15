@@ -52,6 +52,7 @@ bool po_struct::_help_verify() const {
   if (inject) count++;
   if (debug) count++;
   if (update) count++;
+  std::cout << count << '\n';
   return count <= 1 && count >= 0;
 }
 

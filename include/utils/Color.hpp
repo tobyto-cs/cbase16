@@ -13,6 +13,7 @@ using std::string;
 struct rgb_base { virtual const string getstr() const { return "rgb base"; } };
 struct rgb_hex : public rgb_base
 {
+  using rgb_base::getstr;
   const string r;
   const string g;
   const string b;
@@ -23,6 +24,7 @@ struct rgb_hex : public rgb_base
 };
 struct rgb_dec : public rgb_base
 {
+  using rgb_base::getstr;
   const float r;
   const float g;
   const float b;
@@ -32,6 +34,7 @@ struct rgb_dec : public rgb_base
 };
 struct rgb_int : public rgb_base
 {
+  using rgb_base::getstr;
   const ushort r;
   const ushort g;
   const ushort b;
@@ -41,6 +44,7 @@ struct rgb_int : public rgb_base
 };
 struct hsl_dec : public rgb_base
 {
+  using rgb_base::getstr;
   const float h;
   const float s;
   const float l;

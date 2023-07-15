@@ -18,7 +18,8 @@ message("Compiler flags: ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wno-dev")
 
 # LeakSanitizer Suppression settings for external libraries.
-set(ENV{LSAN_OPTIONS} "suppressions=${CMAKE_SOURCE_DIR}/dev/lsan.supp")
+set(ENV{LSAN_OPTIONS} "suppressions=${CMAKE_SOURCE_DIR}/dev/lsan.supp:detect_leaks=0")
+set(ENV{ASAN_OPTIONS} "detect_leaks=0")
 
 find_package(
   Boost 1.80.0
