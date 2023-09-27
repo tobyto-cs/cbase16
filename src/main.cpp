@@ -20,7 +20,6 @@ extern "C" {
 namespace po = boost::program_options;
 using std::cout;
 
-
 int main(int argc, char* argv[])
 {
 
