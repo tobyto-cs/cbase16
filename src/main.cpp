@@ -27,6 +27,9 @@ int main(int argc, char* argv[])
 
   int exit_code = 0;
   try {
+local NeoTree = {
+
+}
     if (args.help)
     {
       cout << args.desc << '\n';

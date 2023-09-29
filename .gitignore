@@ -1,4 +1,5 @@
 .ccls-cache
 build/
 install/
+out/
 tags
